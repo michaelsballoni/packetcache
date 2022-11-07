@@ -8,42 +8,48 @@ namespace packetcache
 
 	enum class cache_op
 	{
+		Success,
+		Failure,
+
+		Clear
+
 		Get,
 		Put,
 		Delete,
-		Success
+
+		GetStats,
+		ClearStats,
+
 	};
 
-	class packet
+	// https://stackoverflow.com/questions/1098897/what-is-the-largest-safe-udp-packet-size-on-the-internet
+	const size_t max_packet_size = 508;
+
+	const size_t min_packet_size = 
+		sizeof(uint8_t) + // op 
+		sizeof(u_short) + // key len
+		sizeof(u_short) + // val len
+		sizeof(uint32_t); // crc
+
+	struct packet
 	{
-	public:
-		static const size_t max_packet_size = 2 * 1024;
+		packet() 
+			: op(cache_op::Success)
+		{
+		}
 
-		// Pack a packet
-		byte_array pack(const cache_op op, const byte_array& key, const byte_array& value);
+		cache_op op;
+		byte_array key;
+		byte_array value;
 
-		// Parse a packet
-		// Does not take ownership of the data, instead storing offsets into the data
-		packet(const uint8_t* data, size_t len);
+		void reset()
+		{
+			op = cache_op(0);
+			key.clear();
+			value.clear();
+		}
 
-		const cache_op op() { return m_op; }
-
-		const uint8_t* key() const { return m_key; }
-		const size_t key_len() const { return m_key_len; }
-
-		const uint8_t* value() const { return m_value; }
-		const size_t value_len() const { return m_value_len; }
-
-	private:
-		const uint8_t* m_data;
-		size_t m_len;
-
-		cache_op m_op;
-
-		uint8_t* m_key;
-		size_t m_key_len;
-
-		uint8_t* m_value;
-		size_t m_value_len;
+		static const char* pack(const packet& p, byte_array& output);
+		static const char* parse(const byte_array& input, packet& p);
 	};
 }
