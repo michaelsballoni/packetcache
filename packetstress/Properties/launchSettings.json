@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "packetstress": {
+      "commandName": "Project",
+      "commandLineArgs": "mem localhost 1 1 \"C:\\Users\\ballo\\Music\\iTunes\\iTunes Media\\Music\""
+    }
+  }
+}

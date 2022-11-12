@@ -11,7 +11,7 @@ namespace packetcache
 		Success,
 		Failure,
 
-		Clear
+		Clear,
 
 		Get,
 		Put,
@@ -19,7 +19,6 @@ namespace packetcache
 
 		GetStats,
 		ClearStats,
-
 	};
 
 	// https://stackoverflow.com/questions/1098897/what-is-the-largest-safe-udp-packet-size-on-the-internet
