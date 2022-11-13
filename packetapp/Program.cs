@@ -50,8 +50,8 @@ while (true)
         }
 
         var value = tokens[2];
-        double ttl_seconds;
-        if (!double.TryParse(tokens[3], out ttl_seconds))
+        int ttl_seconds;
+        if (!int.TryParse(tokens[3], out ttl_seconds))
         {
             Console.WriteLine("set TTL seconds is invalid");
             continue;

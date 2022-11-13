@@ -1,9 +1,15 @@
+#pragma once
+
+#include <string>
 #include <vector>
 
 namespace packetcache
 {
     uint32_t hash_bytes(const uint8_t* data, const size_t len);
     uint32_t crc_bytes(const uint8_t* data, const size_t len);
+
+    std::vector<uint8_t> str_to_buffer(const char* str);
+    std::string buffer_to_str(const std::vector<uint8_t>& buffer);
 
     struct byte_array_hasher
     {

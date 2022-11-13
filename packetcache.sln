@@ -5,11 +5,16 @@ VisualStudioVersion = 17.3.32922.545
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pluspacketlib", "pluspacketlib\pluspacketlib.vcxproj", "{199EA4AC-7B67-469E-AED4-7230B22839C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpPacketLib", "SharpPacketLib\SharpPacketLib.csproj", "{3DE3EE7D-11E7-4A9A-8405-CE0C12F1A982}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpPacketLib", "SharpPacketLib\SharpPacketLib.csproj", "{3DE3EE7D-11E7-4A9A-8405-CE0C12F1A982}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "packetapp", "packetapp\packetapp.csproj", "{F555670F-D8DA-438F-8E58-421D1DDA7771}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "packetapp", "packetapp\packetapp.csproj", "{F555670F-D8DA-438F-8E58-421D1DDA7771}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "packetstress", "packetstress\packetstress.csproj", "{5BB624B2-99AB-430B-A896-D6F1978D5798}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "packetstress", "packetstress\packetstress.csproj", "{5BB624B2-99AB-430B-A896-D6F1978D5798}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pluspacktests", "pluspacktests\pluspacktests.vcxproj", "{23AFD176-E5D0-4AF0-8A08-4252F88ED835}"
+	ProjectSection(ProjectDependencies) = postProject
+		{199EA4AC-7B67-469E-AED4-7230B22839C3} = {199EA4AC-7B67-469E-AED4-7230B22839C3}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +74,18 @@ Global
 		{5BB624B2-99AB-430B-A896-D6F1978D5798}.Release|x64.Build.0 = Release|Any CPU
 		{5BB624B2-99AB-430B-A896-D6F1978D5798}.Release|x86.ActiveCfg = Release|Any CPU
 		{5BB624B2-99AB-430B-A896-D6F1978D5798}.Release|x86.Build.0 = Release|Any CPU
+		{23AFD176-E5D0-4AF0-8A08-4252F88ED835}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{23AFD176-E5D0-4AF0-8A08-4252F88ED835}.Debug|Any CPU.Build.0 = Debug|x64
+		{23AFD176-E5D0-4AF0-8A08-4252F88ED835}.Debug|x64.ActiveCfg = Debug|x64
+		{23AFD176-E5D0-4AF0-8A08-4252F88ED835}.Debug|x64.Build.0 = Debug|x64
+		{23AFD176-E5D0-4AF0-8A08-4252F88ED835}.Debug|x86.ActiveCfg = Debug|Win32
+		{23AFD176-E5D0-4AF0-8A08-4252F88ED835}.Debug|x86.Build.0 = Debug|Win32
+		{23AFD176-E5D0-4AF0-8A08-4252F88ED835}.Release|Any CPU.ActiveCfg = Release|x64
+		{23AFD176-E5D0-4AF0-8A08-4252F88ED835}.Release|Any CPU.Build.0 = Release|x64
+		{23AFD176-E5D0-4AF0-8A08-4252F88ED835}.Release|x64.ActiveCfg = Release|x64
+		{23AFD176-E5D0-4AF0-8A08-4252F88ED835}.Release|x64.Build.0 = Release|x64
+		{23AFD176-E5D0-4AF0-8A08-4252F88ED835}.Release|x86.ActiveCfg = Release|Win32
+		{23AFD176-E5D0-4AF0-8A08-4252F88ED835}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

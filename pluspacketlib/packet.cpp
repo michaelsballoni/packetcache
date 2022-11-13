@@ -10,7 +10,6 @@ namespace packetcache
 	{
 		// Reset the output
 		output.clear();
-		output.reserve(max_packet_size);
 
 		// Make sure it will all fit
 		if
@@ -66,6 +65,11 @@ namespace packetcache
 		// Extract op
 		size_t idx = 0;
 		p.op = cache_op(input[idx++]);
+
+		// Extract ttl
+		const uint32_t ttl = ntohl(*reinterpret_cast<const uint32_t*>(input.data() + idx));
+		idx += sizeof(uint32_t);
+		p.expiration = ::time(nullptr) + ttl;
 
 		// Extract key
 		const u_short key_len = ntohs(*reinterpret_cast<const u_short*>(input.data() + idx));

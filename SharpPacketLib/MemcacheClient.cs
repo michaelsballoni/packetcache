@@ -30,7 +30,7 @@ namespace packetcache
             return result.HasValue ? result.Value : null;
         }
 
-        public async Task<bool> SetAsync(string key, object value, double cacheSeconds)
+        public async Task<bool> SetAsync(string key, object value, int cacheSeconds)
         {
             return await m_client.StoreAsync(StoreMode.Set, key, value, TimeSpan.FromSeconds(cacheSeconds));
         }

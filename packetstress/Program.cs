@@ -3,15 +3,15 @@ using System.Linq;
 
 if (args.Length < 4)
 {
-    Console.WriteLine("Usage: packetapp <mem|pac> <server> <ttl second> <# threads> <path to consume>");
+    Console.WriteLine("Usage: packetapp <mem|pac> <server> <ttl second> <# threads> <test length seconds> <path to consume>");
     return;
 }
 
 string proto = args[0];
 string server = args[1];
 
-double cache_ttl_seconds;
-if (!double.TryParse(args[2], out cache_ttl_seconds))
+int cache_ttl_seconds;
+if (!int.TryParse(args[2], out cache_ttl_seconds))
 {
     Console.WriteLine("Invalid number of threads");
     return;
@@ -24,7 +24,14 @@ if (!int.TryParse(args[3], out thread_count))
     return;
 }
 
-string path_to_consume = args[4];
+int seconds_to_run_for;
+if (!int.TryParse(args[4], out seconds_to_run_for))
+{
+    Console.WriteLine("Invalid seconds to run for");
+    return;
+}
+
+string path_to_consume = args[5];
 
 Console.Write("Getting all subdirectories... ");
 string[] music_sub_dirs = Directory.GetDirectories(path_to_consume, "*", SearchOption.AllDirectories);
@@ -51,7 +58,7 @@ for (int t = 1; t <= thread_count; ++t)
     tasks[t - 1] = Task.Run(async () => await ProcessDictAsync());
 Task.WaitAll(tasks);
 
-Console.WriteLine($"hits: {stats.hits} - misses: {stats.misses} - total: {stats.total}");
+Console.WriteLine($"hits: {stats.hits} - misses: {stats.misses} - total: {stats.total} - {stats.total / seconds_to_run_for} / sec");
 
 async Task ProcessDictAsync()
 {
@@ -82,7 +89,7 @@ async Task ProcessDictAsync()
                 stats.hits++;
         }
 
-        if ((DateTime.UtcNow - start_time).TotalSeconds >= 5)
+        if ((DateTime.UtcNow - start_time).TotalSeconds >= seconds_to_run_for)
             break;
     }
 }
@@ -92,4 +99,3 @@ class CacheStats
     public int hits, misses;
     public int total => hits + misses;
 }
-
