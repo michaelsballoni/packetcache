@@ -5,11 +5,11 @@
 
 namespace packetcache
 {
-	class client
+	class packet_client
 	{
 	public:
-		client();
-		~client();
+		packet_client();
+		~packet_client();
 
 		bool connect(const char* server, const uint16_t port);
 

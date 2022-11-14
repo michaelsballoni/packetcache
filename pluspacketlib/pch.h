@@ -6,10 +6,8 @@
 #include <ws2tcpip.h>
 #pragma comment(lib, "Ws2_32.lib")
 
-#include <atomic>
-#include <functional>
 #include <memory>
-#include <stdexcept>
+#include <string>
 #include <thread>
 #include <unordered_map>
 #include <vector>

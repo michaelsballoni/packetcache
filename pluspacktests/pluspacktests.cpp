@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 
+#include "server.h"
+#include "client.h"
 #include "cache_list.h"
 #include "utils.h"
 
@@ -109,6 +111,41 @@ namespace packetcache
 			Assert::IsTrue(nullptr == list.head());
 			Assert::IsTrue(nullptr == list.tail());
 			Assert::AreEqual(size_t(0), list.size());
+		}
+
+		TEST_METHOD_INITIALIZE(TestMethodInit)
+		{
+			WSADATA data;
+			Assert::AreEqual(0, ::WSAStartup(MAKEWORD(2, 2), &data));
+		}
+
+		TEST_METHOD_CLEANUP(TestMethodClean)
+		{
+			Assert::AreEqual(0, ::WSACleanup());
+		}
+
+		TEST_METHOD(TestClientServer)
+		{
+			packet_server server(9914, 1024 * 1024);
+
+			Assert::IsTrue(server.start());
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			server.stop();
+
+			Assert::IsTrue(server.start());
+
+			{
+				packet_client client;
+				Assert::IsTrue(client.connect("127.0.0.1", 9914));
+				Assert::IsTrue(client.put("foo", "bar", 86400));
+				std::string out;
+				Assert::IsTrue(client.get("foo", out));
+				Assert::AreEqual(std::string("bar"), out);
+				Assert::IsTrue(client.del("foo"));
+				Assert::IsFalse(client.get("foo", out));
+			}
+
+			server.stop();
 		}
 	};
 }

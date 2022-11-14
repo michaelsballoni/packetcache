@@ -27,7 +27,8 @@ namespace packetcache
 		m_socket = ::socket(AF_INET, SOCK_DGRAM, 0);
 		if (m_socket == INVALID_SOCKET)
 		{
-			printf("socket: %d\n", (int)::WSAGetLastError());
+			int last_error = ::WSAGetLastError();
+			printf("socket: %d\n", last_error);
 			return false;
 		}
 
@@ -39,13 +40,14 @@ namespace packetcache
 		servaddr.sin_port = htons(m_port);
 		if (::bind(m_socket, (const sockaddr*)&servaddr, sizeof(servaddr)) != 0)
 		{
-			printf("bind: %d\n", (int)::WSAGetLastError());
+			int last_error = ::WSAGetLastError();
+			printf("bind: %d\n", last_error);
 			return false;
 		}
 
 		// all good
 		m_keepRunning = true;
-		m_thread = std::make_shared<std::thread>(&packet_server::process_requests, *this);
+		m_thread = std::make_shared<std::thread>(&packet_server::process_requests, this);
 		return true;
 	}
 
@@ -68,24 +70,31 @@ namespace packetcache
 
 	void packet_server::process_requests()
 	{
+		// lift everything out of the loop
 		std::vector<uint8_t> input_buffer, output_buffer;
 
 		packet input_packet, output_packet;
 
 		sockaddr_in clientaddr;
+		sockaddr* clientaddr_addr = (sockaddr*)&clientaddr;
+		memset(clientaddr_addr, 0, sizeof(clientaddr));
+
+		int len = -1;
+		
 		while (m_keepRunning)
 		{
 			// reset our input buffer
 			input_buffer.resize(max_packet_size);
 
 			// read the request
-			int len = sizeof(clientaddr);
+			len = sizeof(clientaddr);
 			int read_amount =
-				::recvfrom(m_socket, (char*)input_buffer.data(), (int)input_buffer.size(), 0, (sockaddr*)&clientaddr, &len);
+				::recvfrom(m_socket, (char*)input_buffer.data(), (int)input_buffer.size(), 0, clientaddr_addr, &len);
 			if (read_amount <= 0)
 			{
+				int last_error = ::WSAGetLastError();
 				if (m_keepRunning)
-					printf("recvfrom: %d\n", (int)::WSAGetLastError());
+					printf("recvfrom: %d\n", last_error);
 				continue;
 			}
 
@@ -117,10 +126,11 @@ namespace packetcache
 			}
 
 			// send the response
-			if (::sendto(m_socket, (const char*)output_buffer.data(), (int)output_buffer.size(), 0, (const sockaddr*)&clientaddr, len) != 0)
+			if (::sendto(m_socket, (const char*)output_buffer.data(), (int)output_buffer.size(), 0, (const sockaddr*)&clientaddr, len) < 0)
 			{
+				int last_error = ::WSAGetLastError();
 				if (m_keepRunning)
-					printf("sendto: %d\n", (int)::WSAGetLastError());
+					printf("sendto: %d\n", last_error);
 				continue;
 			}
 		}

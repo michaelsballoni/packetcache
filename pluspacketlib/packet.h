@@ -27,8 +27,8 @@ namespace packetcache
 	const size_t min_packet_size = 
 		sizeof(uint8_t)  + // op 
 		sizeof(uint32_t) + // ttl
-		sizeof(u_short)  + // key len
-		sizeof(u_short)  + // val len
+		sizeof(uint16_t)  + // key len
+		sizeof(uint16_t)  + // val len
 		sizeof(uint32_t);  // crc
 
 	struct packet

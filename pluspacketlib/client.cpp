@@ -4,43 +4,47 @@
 
 namespace packetcache
 {
-	client::client()
+	packet_client::packet_client()
 		: m_socket(INVALID_SOCKET)
 	{
 	}
 
-	client::~client()
+	packet_client::~packet_client()
 	{
 		::closesocket(m_socket);
 	}
 
-	bool client::connect(const char* server, const uint16_t port)
+	bool packet_client::connect(const char* server, const uint16_t port)
 	{
 		if (m_socket != INVALID_SOCKET)
 			::closesocket(m_socket);
 
+		// UDP socket
+		m_socket = ::socket(AF_INET, SOCK_DGRAM, 0);
+		if (m_socket == INVALID_SOCKET)
+		{
+			int last_error = ::WSAGetLastError();
+			printf("socket: %d\n", last_error);
+			return false;
+		}
+
+		// connect to server
 		sockaddr_in servaddr;
 		memset(&servaddr, 0, sizeof(servaddr));
 		servaddr.sin_addr.s_addr = inet_addr(server);
 		servaddr.sin_port = htons(port);
 		servaddr.sin_family = AF_INET;
-		m_socket = ::socket(AF_INET, SOCK_DGRAM, 0);
-		if (m_socket == INVALID_SOCKET)
-		{
-			printf("socket: %d\n", (int)::WSAGetLastError());
-			return false;
-		}
-
 		if (::connect(m_socket, (sockaddr*)&servaddr, sizeof(servaddr)) != 0)
 		{
-			printf("connect: %d\n", (int)::WSAGetLastError());
+			int last_error = ::WSAGetLastError();
+			printf("connect: %d\n", last_error);
 			return false;
 		}
 
 		return true;
 	}
 
-	bool client::put(const std::string& key, const std::string& value, const int ttl)
+	bool packet_client::put(const std::string& key, const std::string& value, const int ttl)
 	{
 		str_to_buffer(key, m_request.key);
 		str_to_buffer(value, m_request.value);
@@ -52,7 +56,7 @@ namespace packetcache
 		return result && m_response.op == cache_op::Success;
 	}
 
-	bool client::get(const std::string& key, std::string& value)
+	bool packet_client::get(const std::string& key, std::string& value)
 	{
 		str_to_buffer(key, m_request.key);
 
@@ -64,19 +68,21 @@ namespace packetcache
 		if (m_response.op != cache_op::Success)
 			return false;
 
-		value = buffer_to_str(m_response.value);
+		buffer_to_str(m_response.value, value);
 		return true;
 	}
 
-	bool client::del(const std::string& key)
+	bool packet_client::del(const std::string& key)
 	{
 		str_to_buffer(key, m_request.key);
+
 		m_request.op = cache_op::Delete;
+
 		bool result = process_packet();
 		return result && m_response.op == cache_op::Success;
 	}
 
-	bool client::process_packet()
+	bool packet_client::process_packet()
 	{
 		// build out request packet
 		const char* pack_result = packet::pack(m_request, m_request_buffer);
@@ -87,9 +93,10 @@ namespace packetcache
 		}
 
 		// send the request
-		if (::send(m_socket, (const char*)m_request_buffer.data(), (int)m_request_buffer.size(), 0) != 0)
+		if (::send(m_socket, (const char*)m_request_buffer.data(), (int)m_request_buffer.size(), 0) < 0)
 		{
-			printf("send: %d\n", (int)::WSAGetLastError());
+			int last_error = ::WSAGetLastError();
+			printf("send: %d\n", last_error);
 			return false;
 		}
 
@@ -97,8 +104,9 @@ namespace packetcache
 		m_response_buffer.resize(max_packet_size);
 		int read_amount = ::recv(m_socket, (char*)m_response_buffer.data(), (int)m_response_buffer.size(), 0);
 		if (read_amount <= 0)
-		{	
-			printf("recv: %d\n", (int)::WSAGetLastError());
+		{
+			int last_error = ::WSAGetLastError();
+			printf("recv: %d\n", last_error);
 			return false;
 		}
 
