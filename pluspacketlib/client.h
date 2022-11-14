@@ -13,14 +13,18 @@ namespace packetcache
 
 		bool connect(const char* server, const uint16_t port);
 
-		bool put(const char* key, const char* value, const int ttl);
-		bool get(const char* key, std::string& value);
-		bool del(const char* key);
+		bool put(const std::string& key, const std::string& value, const int ttl);
+		bool get(const std::string& key, std::string& value);
+		bool del(const std::string& key);
 
 	private:
-		bool process_packet(const packet& request, packet& response);
+		bool process_packet();
 
 	private:
 		SOCKET m_socket;
+
+		// reuse everything
+		packet m_request, m_response;
+		std::vector<uint8_t> m_request_buffer, m_response_buffer;
 	};
 }

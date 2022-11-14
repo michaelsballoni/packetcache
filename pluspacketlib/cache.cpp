@@ -44,8 +44,8 @@ const char* cache::handle_packet(const packet& input, packet& output)
 			else
 			{
 				++m_hits;
-				output.op = cache_op::Success;
 				output.value = m_cache_list.get(it->second);
+				output.op = cache_op::Success;
 			}
 		}
 		else
@@ -59,7 +59,6 @@ const char* cache::handle_packet(const packet& input, packet& output)
 	case cache_op::Put:
 	{
 		++m_puts;
-		output.op = cache_op::Success;
 
 		auto it = m_cache.find(input.key);
 		if (it != m_cache.end())
@@ -68,13 +67,13 @@ const char* cache::handle_packet(const packet& input, packet& output)
 			m_cache.insert({ input.key, m_cache_list.add(input.expiration, input.value)});
 		
 		m_cache_list.trim(m_max_size);
+		output.op = cache_op::Success;
 		break;
 	}
 
 	case cache_op::Delete:
 	{
 		++m_deletes;
-		output.op = cache_op::Success;
 
 		auto it = m_cache.find(input.key);
 		if (it != m_cache.end())
@@ -82,13 +81,12 @@ const char* cache::handle_packet(const packet& input, packet& output)
 			m_cache_list.remove(it->second);
 			m_cache.erase(it);
 		}
+		output.op = cache_op::Success;
 		break;
 	}
 
 	case cache_op::GetStats:
 	{
-		output.op = cache_op::Success;
-
 		char stats_str[1024];
 		::sprintf_s
 		(
@@ -101,27 +99,26 @@ const char* cache::handle_packet(const packet& input, packet& output)
 			m_hits,
 			m_misses
 		);
-		output.value = str_to_buffer(stats_str);
+		str_to_buffer(stats_str, output.value);
+		output.op = cache_op::Success;
 		break;
 	}
 
 	case cache_op::ClearStats:
 	{
-		output.op = cache_op::Success;
-
 		m_gets = 0;
 		m_puts = 0;
 		m_deletes = 0;
 		m_hits = 0;
 		m_misses = 0;
-
+		output.op = cache_op::Success;
 		break;
 	}
 
 	case cache_op::Clear:
 	{
-		output.op = cache_op::Success;
 		clear();
+		output.op = cache_op::Success;
 		break;
 	}
 

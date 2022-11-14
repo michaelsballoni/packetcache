@@ -45,7 +45,7 @@ foreach (string cur_dir in music_sub_dirs)
     if (cur_dir_files.Length > 0)
     {
         string key = cur_dir.Substring(path_to_consume.Length).Trim(Path.DirectorySeparatorChar);
-        dir_files.Add(key, string.Join('\n', cur_dir_files));
+        dir_files.Add(key, string.Join('\n', cur_dir_files.Select(path => Path.GetFileName(path))));
     }
 }
 var dir_file_names = dir_files.Keys.ToArray();

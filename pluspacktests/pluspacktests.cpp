@@ -36,13 +36,13 @@ namespace packetcache
 		TEST_METHOD(TestCacheList)
 		{
 			const std::string test_str1 = "foobar";
-			const byte_array test_buffer1 = str_to_buffer(test_str1.c_str());
+			const byte_array test_buffer1 = str_to_buffer(test_str1);
 
 			const std::string test_str2 = "bletmonkey";
-			const byte_array test_buffer2 = str_to_buffer(test_str2.c_str());
+			const byte_array test_buffer2 = str_to_buffer(test_str2);
 
 			const std::string test_str3 = "somethingelse";
-			const byte_array test_buffer3 = str_to_buffer(test_str3.c_str());
+			const byte_array test_buffer3 = str_to_buffer(test_str3);
 
 			cache_list list;
 

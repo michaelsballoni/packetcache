@@ -41,7 +41,7 @@ namespace packetcache
 
 		void reset()
 		{
-			op = cache_op::Success;
+			op = cache_op::Failure;
 			expiration = 0;
 
 			key.clear();

@@ -40,45 +40,46 @@ namespace packetcache
 		return true;
 	}
 
-	bool client::put(const char* key, const char* value, const int ttl)
+	bool client::put(const std::string& key, const std::string& value, const int ttl)
 	{
-		packet request, response;
-		request.key = str_to_buffer(key);
-		request.value = str_to_buffer(value);
-		request.op = cache_op::Put;
-		request.expiration = ttl;
-		bool result = process_packet(request, response);
-		return result && response.op == cache_op::Success;
+		str_to_buffer(key, m_request.key);
+		str_to_buffer(value, m_request.value);
+
+		m_request.op = cache_op::Put;
+		m_request.expiration = ttl;
+
+		bool result = process_packet();
+		return result && m_response.op == cache_op::Success;
 	}
 
-	bool client::get(const char* key, std::string& value)
+	bool client::get(const std::string& key, std::string& value)
 	{
-		packet request, response;
-		request.key = str_to_buffer(key);
-		request.op = cache_op::Get;
-		bool result = process_packet(request, response);
+		str_to_buffer(key, m_request.key);
+
+		m_request.op = cache_op::Get;
+
+		bool result = process_packet();
 		if (!result)
 			return false;
-		if (response.op != cache_op::Success)
+		if (m_response.op != cache_op::Success)
 			return false;
-		value = buffer_to_str(response.value);
+
+		value = buffer_to_str(m_response.value);
 		return true;
 	}
 
-	bool client::del(const char* key)
+	bool client::del(const std::string& key)
 	{
-		packet request, response;
-		request.key = str_to_buffer(key);
-		request.op = cache_op::Delete;
-		bool result = process_packet(request, response);
-		return result && response.op == cache_op::Success;
+		str_to_buffer(key, m_request.key);
+		m_request.op = cache_op::Delete;
+		bool result = process_packet();
+		return result && m_response.op == cache_op::Success;
 	}
 
-	bool client::process_packet(const packet& request, packet& response)
+	bool client::process_packet()
 	{
 		// build out request packet
-		std::vector<uint8_t> request_buffer;
-		const char* pack_result = packet::pack(request, request_buffer);
+		const char* pack_result = packet::pack(m_request, m_request_buffer);
 		if (pack_result != nullptr)
 		{
 			printf("packet::pack: %s\n", pack_result);
@@ -86,16 +87,15 @@ namespace packetcache
 		}
 
 		// send the request
-		if (::send(m_socket, (const char*)request_buffer.data(), (int)request_buffer.size(), 0) != 0)
+		if (::send(m_socket, (const char*)m_request_buffer.data(), (int)m_request_buffer.size(), 0) != 0)
 		{
 			printf("send: %d\n", (int)::WSAGetLastError());
 			return false;
 		}
 
 		// read the response
-		std::vector<uint8_t> response_buffer;
-		response_buffer.resize(max_packet_size);
-		int read_amount = ::recv(m_socket, (char*)response_buffer.data(), (int)response_buffer.size(), 0);
+		m_response_buffer.resize(max_packet_size);
+		int read_amount = ::recv(m_socket, (char*)m_response_buffer.data(), (int)m_response_buffer.size(), 0);
 		if (read_amount <= 0)
 		{	
 			printf("recv: %d\n", (int)::WSAGetLastError());
@@ -103,10 +103,10 @@ namespace packetcache
 		}
 
 		// trim the output buffer
-		response_buffer.resize(read_amount);
+		m_response_buffer.resize(read_amount);
 
 		// parse the input buffer into a usable packet
-		const char* parse_result = packet::parse(response_buffer, response);
+		const char* parse_result = packet::parse(m_response_buffer, m_response);
 		if (parse_result != nullptr)
 		{
 			printf("packet::parse: %s\n", parse_result);

@@ -8,8 +8,11 @@ namespace packetcache
     uint32_t hash_bytes(const uint8_t* data, const size_t len);
     uint32_t crc_bytes(const uint8_t* data, const size_t len);
 
-    std::vector<uint8_t> str_to_buffer(const char* str);
+    std::vector<uint8_t> str_to_buffer(const std::string& str);
+    void str_to_buffer(const std::string& str, std::vector<uint8_t>& output);
+
     std::string buffer_to_str(const std::vector<uint8_t>& buffer);
+    void buffer_to_str(const std::vector<uint8_t>& buffer, std::string& output);
 
     struct byte_array_hasher
     {
