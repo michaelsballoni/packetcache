@@ -164,8 +164,10 @@
     <ClInclude Include="cache.h" />
     <ClInclude Include="cache_entry.h" />
     <ClInclude Include="cache_list.h" />
+    <ClInclude Include="client.h" />
     <ClInclude Include="packet.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="server.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
@@ -191,6 +193,7 @@
     </ClCompile>
     <ClCompile Include="cache.cpp" />
     <ClCompile Include="cache_list.cpp" />
+    <ClCompile Include="client.cpp" />
     <ClCompile Include="packet.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -198,6 +201,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="server.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

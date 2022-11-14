@@ -18,6 +18,8 @@ namespace packetcache
 		~cache();
 
 		const char* handle_packet(const packet& input, packet& output);
+
+	private:
 		void clear();
 
 	private:

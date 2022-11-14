@@ -14,10 +14,11 @@ namespace packetcache
 		// Make sure it will all fit
 		if
 		(
-			sizeof(uint8_t) + // op
+			sizeof(uint8_t) +  // op
+			sizeof(uint32_t) + // ttl
 			sizeof(u_short) + p.key.size() +
 			sizeof(u_short) + p.value.size() +
-			sizeof(uint32_t) // crc
+			sizeof(uint32_t)   // crc
 			> max_packet_size
 		)
 		{
@@ -26,6 +27,11 @@ namespace packetcache
 
 		// Add the op
 		output.push_back(uint8_t(p.op));
+
+		// Add the TTL
+		uint32_t ttl_net = htonl(static_cast<uint32_t>(p.expiration));
+		uint8_t* ttl_data = reinterpret_cast<uint8_t*>(&ttl_net);
+		output.insert(output.end(), { ttl_data[0], ttl_data[1], ttl_data[2], ttl_data[3] });
 
 		// Add the key len and data
 		u_short key_len_net = htons(u_short(p.key.size()));
@@ -68,12 +74,12 @@ namespace packetcache
 
 		// Extract ttl
 		const uint32_t ttl = ntohl(*reinterpret_cast<const uint32_t*>(input.data() + idx));
-		idx += sizeof(uint32_t);
+		idx += sizeof(ttl);
 		p.expiration = ::time(nullptr) + ttl;
 
 		// Extract key
 		const u_short key_len = ntohs(*reinterpret_cast<const u_short*>(input.data() + idx));
-		idx += sizeof(u_short);
+		idx += sizeof(key_len);
 		if (key_len > 0)
 		{
 			if (idx + key_len >= input.size())
@@ -81,12 +87,13 @@ namespace packetcache
 
 			p.key.resize(key_len);
 			memcpy(p.key.data(), input.data() + idx, key_len);
+
 			idx += key_len;
 		}
 
 		// Extract value
 		const u_short value_len = ntohs(*reinterpret_cast<const u_short*>(input.data() + idx));
-		idx += sizeof(u_short);
+		idx += sizeof(value_len);
 		if (value_len > 0)
 		{
 			if (idx + value_len >= input.size())
@@ -94,6 +101,7 @@ namespace packetcache
 
 			p.value.resize(value_len);
 			memcpy(p.value.data(), input.data() + idx, value_len);
+
 			idx += value_len;
 		}
 

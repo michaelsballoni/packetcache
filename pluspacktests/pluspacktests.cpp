@@ -41,6 +41,9 @@ namespace packetcache
 			const std::string test_str2 = "bletmonkey";
 			const byte_array test_buffer2 = str_to_buffer(test_str2.c_str());
 
+			const std::string test_str3 = "somethingelse";
+			const byte_array test_buffer3 = str_to_buffer(test_str3.c_str());
+
 			cache_list list;
 
 			auto added_entry1 = list.add(0, test_buffer1);
@@ -66,9 +69,40 @@ namespace packetcache
 			Assert::IsTrue(added_entry1 == list.head());
 			Assert::IsTrue(added_entry2 == list.tail());
 
+			auto added_entry3 = list.add(0, test_buffer3);
+			size_t size3 = list.size();
+			Assert::IsTrue(size3 > size2);
+
+			Assert::IsTrue(added_entry3 == list.head());
+			Assert::IsTrue(added_entry3 == list.head()->next->prev);
+			Assert::IsTrue(added_entry1 == list.head()->next);
+			Assert::IsTrue(added_entry1 == list.head()->next->next->prev);
+			Assert::IsTrue(added_entry1 == list.tail()->prev);
+			Assert::IsTrue(added_entry2 == list.tail());
+
+			gotten_buffer1 = list.get(added_entry1);
+			Assert::AreEqual(test_str1, buffer_to_str(gotten_buffer1));
+
+			Assert::IsTrue(added_entry1 == list.head());
+			Assert::IsTrue(added_entry1 == list.head()->next->prev);
+			Assert::IsTrue(added_entry3 == list.head()->next);
+			Assert::IsTrue(added_entry3 == list.head()->next->next->prev);
+			Assert::IsTrue(added_entry3 == list.tail()->prev);
+			Assert::IsTrue(added_entry2 == list.tail());
+
+			list.remove(added_entry3);
+
+			Assert::IsTrue(added_entry1 == list.head());
+			Assert::IsTrue(added_entry1 == list.head()->next->prev);
+			Assert::IsTrue(added_entry1 == list.tail()->prev);
+			Assert::IsTrue(added_entry2 == list.head()->next);
+			Assert::IsTrue(added_entry2 == list.tail());
+
 			list.remove(added_entry2);
 
 			Assert::IsTrue(added_entry1 == list.head());
+			Assert::IsTrue(nullptr == list.head()->prev);
+			Assert::IsTrue(nullptr == list.head()->next);
 			Assert::IsTrue(added_entry1 == list.tail());
 
 			list.clear();
