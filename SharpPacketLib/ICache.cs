@@ -2,8 +2,8 @@
 {
     public interface ICache
     {
-        Task<T?> GetAsync<T>(string key) where T : class;
-        Task<bool> SetAsync(string key, object value, int cacheSeconds);
+        Task<string?> GetAsync(string key);
+        Task<bool> SetAsync(string key, string value, int cacheSeconds);
         Task<bool> DelAsync(string key);
     }
 }

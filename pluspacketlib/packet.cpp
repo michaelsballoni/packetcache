@@ -29,7 +29,7 @@ namespace packetcache
 		output.push_back(uint8_t(p.op));
 
 		// Add the TTL
-		uint32_t ttl_net = htonl(static_cast<uint32_t>(p.expiration));
+		uint32_t ttl_net = htonl(uint32_t(p.expiration));
 		uint8_t* ttl_data = reinterpret_cast<uint8_t*>(&ttl_net);
 		output.insert(output.end(), { ttl_data[0], ttl_data[1], ttl_data[2], ttl_data[3] });
 

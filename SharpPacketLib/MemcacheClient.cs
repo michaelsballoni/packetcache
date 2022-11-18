@@ -24,13 +24,13 @@ namespace packetcache
             GC.SuppressFinalize(this);
         }
 
-        public async Task<T?> GetAsync<T>(string key) where T : class
+        public async Task<string?> GetAsync(string key) where T : class
         {
-            var result = await m_client.GetAsync<T>(key);
-            return result.HasValue ? result.Value : null;
+            var result = await m_client.GetAsync(key);
+            return result.HasValue ? result.Value.ToString() : null;
         }
 
-        public async Task<bool> SetAsync(string key, object value, int cacheSeconds)
+        public async Task<bool> SetAsync(string key, string value, int cacheSeconds)
         {
             return await m_client.StoreAsync(StoreMode.Set, key, value, TimeSpan.FromSeconds(cacheSeconds));
         }

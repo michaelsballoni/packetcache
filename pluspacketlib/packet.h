@@ -8,8 +8,8 @@ namespace packetcache
 
 	enum class cache_op
 	{
-		Success,
 		Failure,
+		Success,
 
 		Clear,
 
@@ -33,7 +33,7 @@ namespace packetcache
 
 	struct packet
 	{
-		cache_op op = cache_op::Success;
+		cache_op op = cache_op::Failure;
 		time_t expiration = 0;
 
 		byte_array key;
