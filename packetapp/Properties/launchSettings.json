@@ -2,7 +2,7 @@
   "profiles": {
     "packetapp": {
       "commandName": "Project",
-      "commandLineArgs": "mem localhost"
+      "commandLineArgs": "pac localhost"
     }
   }
 }

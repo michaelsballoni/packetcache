@@ -16,6 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="DotNetZip" Version="1.16.0" />
     <PackageReference Include="EnyimMemcachedCore" Version="2.5.5" />
   </ItemGroup>
 

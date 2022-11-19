@@ -60,50 +60,61 @@ namespace packetcache
 		// Reset the the output
 		p.reset();
 
-		// Validate the CRC
+		// Validate size
 		if (input.size() < min_packet_size)
 			return "too small";
-		const uint32_t crc_computed = crc_bytes(input.data(), input.size() - sizeof(uint32_t));
-		const uint32_t crc_given = ntohl(*reinterpret_cast<const u_long*>(input.data() + input.size() - sizeof(uint32_t)));
+		else if (input.size() > max_packet_size)
+			return "too big";
+
+		uint16_t input_size = uint16_t(input.size());
+		const uint8_t* input_data = input.data();
+
+		// Validate the CRC
+		const uint32_t crc_computed = crc_bytes(input_data, input_size - sizeof(uint32_t));
+		const uint32_t crc_given = ntohl(*reinterpret_cast<const u_long*>(input_data + input_size - sizeof(uint32_t)));
 		if (crc_given != crc_computed)
 			return "checksum mismatch";
 
 		// Extract op
 		size_t idx = 0;
-		p.op = cache_op(input[idx++]);
+		p.op = cache_op(input_data[idx++]);
 
 		// Extract ttl
-		const uint32_t ttl = ntohl(*reinterpret_cast<const uint32_t*>(input.data() + idx));
+		const uint32_t ttl = ntohl(*reinterpret_cast<const uint32_t*>(input_data + idx));
 		idx += sizeof(ttl);
 		p.expiration = ::time(nullptr) + ttl;
 
 		// Extract key
-		const u_short key_len = ntohs(*reinterpret_cast<const u_short*>(input.data() + idx));
+		const u_short key_len = ntohs(*reinterpret_cast<const u_short*>(input_data + idx));
 		idx += sizeof(key_len);
 		if (key_len > 0)
 		{
-			if (idx + key_len >= input.size())
+			if (idx + key_len >= input_size)
 				return "invalid key len";
 
 			p.key.resize(key_len);
-			memcpy(p.key.data(), input.data() + idx, key_len);
+			memcpy(p.key.data(), input_data + idx, key_len);
 
 			idx += key_len;
 		}
 
 		// Extract value
-		const u_short value_len = ntohs(*reinterpret_cast<const u_short*>(input.data() + idx));
+		const u_short value_len = ntohs(*reinterpret_cast<const u_short*>(input_data + idx));
 		idx += sizeof(value_len);
 		if (value_len > 0)
 		{
-			if (idx + value_len >= input.size())
+			if (idx + value_len >= input_size)
 				return "invalid value len";
 
 			p.value.resize(value_len);
-			memcpy(p.value.data(), input.data() + idx, value_len);
+			memcpy(p.value.data(), input_data + idx, value_len);
 
 			idx += value_len;
 		}
+
+		// Validate packet size
+		if (idx != input_size - 4)
+			return "invalid packet format";
 
 		return nullptr;
 	}

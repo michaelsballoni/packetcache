@@ -102,19 +102,28 @@ namespace packetcache
 			input_buffer.resize(read_amount);
 
 			// parse the input buffer into a usable packet
-			const char* parse_result = packet::parse(input_buffer, input_packet);
-			if (parse_result != nullptr)
+			bool success = true;
+			if (success)
 			{
-				printf("packet::parse: %s\n", parse_result);
-				continue;
+				const char* parse_result = packet::parse(input_buffer, input_packet);
+				if (parse_result != nullptr)
+				{
+					printf("packet::parse: %s\n", parse_result);
+					output_packet.op = cache_op::Failure;
+					success = false;
+				}
 			}
 
 			// process the packet
-			const char* handle_result = m_cache.handle_packet(input_packet, output_packet);
-			if (handle_result != nullptr)
+			if (success)
 			{
-				printf("handle_packet: %s\n", handle_result);
-				continue;
+				const char* handle_result = m_cache.handle_packet(input_packet, output_packet);
+				if (handle_result != nullptr)
+				{
+					printf("handle_packet: %s\n", handle_result);
+					output_packet.op = cache_op::Failure;
+					success = false;
+				}
 			}
 
 			// pack the response into the output buffer
@@ -122,7 +131,7 @@ namespace packetcache
 			if (pack_result != nullptr)
 			{
 				printf("packet::pack: %s\n", pack_result);
-				continue;
+				output_packet.op = cache_op::Failure;
 			}
 
 			// send the response

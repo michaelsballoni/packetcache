@@ -67,7 +67,7 @@ int main(int argc, char* argv[])
 	std::cout 
 		<< "Server started!" << std::endl 
 		<< std::endl 
-		<< "Hit[Enter] to stop the server and quit: " << std::flush;
+		<< "Hit[Enter] to stop the server and quit:" << std::endl << std::endl;
 
 	std::string str;
 	std::getline(std::cin, str);

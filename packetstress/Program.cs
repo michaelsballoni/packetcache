@@ -74,7 +74,7 @@ async Task ProcessDictAsync()
     {
         int idx = Random.Shared.Next(0, dir_file_names.Length - 1);
         string dir_name = "" + idx;
-        string? filenames = await cache.GetAsync<string>(dir_name);
+        string? filenames = await cache.GetAsync(dir_name);
         if (filenames == null)
         {
             lock (stats)

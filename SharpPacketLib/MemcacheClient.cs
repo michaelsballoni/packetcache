@@ -24,7 +24,7 @@ namespace packetcache
             GC.SuppressFinalize(this);
         }
 
-        public async Task<string?> GetAsync(string key) where T : class
+        public async Task<string?> GetAsync(string key)
         {
             var result = await m_client.GetAsync(key);
             return result.HasValue ? result.Value.ToString() : null;
