@@ -71,7 +71,8 @@ namespace packetcache
 	void packet_server::process_requests()
 	{
 		// lift everything out of the loop
-		std::vector<uint8_t> input_buffer, output_buffer;
+		uint8_t input_buffer[max_packet_size];
+		uint8_t output_buffer[max_packet_size];
 
 		packet input_packet, output_packet;
 
@@ -79,17 +80,15 @@ namespace packetcache
 		sockaddr* clientaddr_addr = (sockaddr*)&clientaddr;
 		memset(clientaddr_addr, 0, sizeof(clientaddr));
 
-		int len = -1;
+		int addr_len = 0;
+		size_t output_len = 0;
 		
 		while (m_keepRunning)
 		{
-			// reset our input buffer
-			input_buffer.resize(max_packet_size);
-
 			// read the request
-			len = sizeof(clientaddr);
+			addr_len = sizeof(clientaddr);
 			int read_amount =
-				::recvfrom(m_socket, (char*)input_buffer.data(), (int)input_buffer.size(), 0, clientaddr_addr, &len);
+				::recvfrom(m_socket, (char*)input_buffer, (int)max_packet_size, 0, clientaddr_addr, &addr_len);
 			if (read_amount <= 0)
 			{
 				int last_error = ::WSAGetLastError();
@@ -98,14 +97,11 @@ namespace packetcache
 				continue;
 			}
 
-			// trim the input buffer
-			input_buffer.resize(read_amount);
-
 			// parse the input buffer into a usable packet
 			bool success = true;
 			if (success)
 			{
-				const char* parse_result = packet::parse(input_buffer, input_packet);
+				const char* parse_result = packet::parse(input_buffer, read_amount, input_packet);
 				if (parse_result != nullptr)
 				{
 					printf("packet::parse: %s\n", parse_result);
@@ -127,7 +123,7 @@ namespace packetcache
 			}
 
 			// pack the response into the output buffer
-			const char* pack_result = packet::pack(output_packet, output_buffer);
+			const char* pack_result = packet::pack(output_packet, output_buffer, output_len);
 			if (pack_result != nullptr)
 			{
 				printf("packet::pack: %s\n", pack_result);
@@ -135,7 +131,7 @@ namespace packetcache
 			}
 
 			// send the response
-			if (::sendto(m_socket, (const char*)output_buffer.data(), (int)output_buffer.size(), 0, (const sockaddr*)&clientaddr, len) < 0)
+			if (::sendto(m_socket, (const char*)output_buffer, (int)output_len, 0, clientaddr_addr, addr_len) < 0)
 			{
 				int last_error = ::WSAGetLastError();
 				if (m_keepRunning)

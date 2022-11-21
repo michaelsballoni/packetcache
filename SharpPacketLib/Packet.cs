@@ -60,12 +60,8 @@ namespace packetcache
             GC.SuppressFinalize(this);
         }
 
-        public static void Pack(Packet p, MemoryStream outputStream)
+        public static void Pack(Packet p, byte[] output, out int idx)
         {
-            // Reset the output
-            outputStream.Seek(0, SeekOrigin.Begin);
-            outputStream.SetLength(0);
-
             // Make sure it will all fit
             if
             (
@@ -80,11 +76,8 @@ namespace packetcache
                 throw new PacketException("Too much data");
             }
 
-            // Let's use a buffer for easy packet assembly
-            byte[] output = new byte[MaxPacketSize];
-            int idx = 0;
-
             // Add the op
+            idx = 0;
             output[idx++] = (byte)p.Op;
 
             // Add the TTL
@@ -110,19 +103,12 @@ namespace packetcache
             Buffer.BlockCopy(p.Value.GetBuffer(), 0, output, idx, value_len);
             idx += value_len;
 
-            // Put what we've got so far into the output stream and rewind
-            outputStream.Write(output, 0, idx);
-            outputStream.Seek(0, SeekOrigin.Begin);
-
             // CRC what we've got so far
-            int crc = new Ionic.Crc.CRC32().GetCrc32(outputStream);
-            // FORNOW
-            Console.WriteLine("packed crc = " + crc); 
-            byte[] crc_data = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(crc));
-
-            // Add CRC to output and rewind
-            outputStream.Write(crc_data, 0, crc_data.Length);
-            outputStream.Seek(0, SeekOrigin.Begin);
+            var crc = Utils.Crc32(output, idx);
+            output[idx++] = crc[3];
+            output[idx++] = crc[2];
+            output[idx++] = crc[1];
+            output[idx++] = crc[0];
         }
 
         public static void Parse(byte[] input, Packet p)
@@ -130,6 +116,7 @@ namespace packetcache
             // Reset the the output
             p.Reset();
 
+            // Validate data length
             short input_len = (short)input.Length;
             if (input_len < MinPacketSize)
                 throw new PacketException("Not enough data");
@@ -137,28 +124,19 @@ namespace packetcache
                 throw new PacketException("Too much data");
 
             // Validate the CRC
-            using (MemoryStream crc_stream = new MemoryStream(input_len - 4))
+            byte[] crc_computed = Utils.Crc32(input, input_len - 4);
+            if 
+            (
+                crc_computed[0] != input[input_len - 4]
+                ||
+                crc_computed[1] != input[input_len - 3]
+                ||
+                crc_computed[2] != input[input_len - 2]
+                ||
+                crc_computed[3] != input[input_len - 1]
+            )
             {
-                crc_stream.Write(input, 0, input_len - 4);
-                crc_stream.Seek(0, SeekOrigin.Begin);
-
-                int crc = new Ionic.Crc.CRC32().GetCrc32(crc_stream); 
-                // FORNOW
-                Console.WriteLine("parsed crc = " + crc);
-                byte[] crc_computed = BitConverter.GetBytes(IPAddress.NetworkToHostOrder(crc));
-                if 
-                (
-                    crc_computed[0] != input[input_len - 4]
-                    ||
-                    crc_computed[1] != input[input_len - 3]
-                    ||
-                    crc_computed[2] != input[input_len - 2]
-                    ||
-                    crc_computed[3] != input[input_len - 1]
-                )
-                {
-                    throw new PacketException("Checksum mismath");
-                }
+                throw new PacketException("Checksum mismath");
             }
 
             // Extract op

@@ -49,7 +49,7 @@ namespace packetcache
 		}
 
 		// These return nullptr on success, otherwise an error message
-		static const char* pack(const packet& p, byte_array& output);
-		static const char* parse(const byte_array& input, packet& p);
+		static const char* pack(const packet& p, uint8_t* output, size_t& output_len);
+		static const char* parse(const uint8_t* input, const size_t input_len, packet& p);
 	};
 }

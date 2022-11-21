@@ -24,15 +24,12 @@ namespace packetcache
             m_requestPacket.Dispose();
             m_responsePacket.Dispose();
 
-            m_requestBuffer.Dispose();
-            m_responseBuffer.Dispose();
-
             GC.SuppressFinalize(this);
         }
 
         public async Task<string?> GetAsync(string key)
         {
-            StrToStream(key, m_requestPacket.Key);
+            Utils.StrToStream(key, m_requestPacket.Key);
 
             m_requestPacket.Op = CacheOp.Get;
 
@@ -40,13 +37,13 @@ namespace packetcache
             if (m_responsePacket.Op != CacheOp.Success)
                 return null;
             else
-                return StreamToStr(m_responsePacket.Value);
+                return Utils.StreamToStr(m_responsePacket.Value);
         }
 
         public async Task<bool> SetAsync(string key, string value, int cacheSeconds)
         {
-            StrToStream(key, m_requestPacket.Key);
-            StrToStream(value, m_requestPacket.Value);
+            Utils.StrToStream(key, m_requestPacket.Key);
+            Utils.StrToStream(value, m_requestPacket.Value);
 
             m_requestPacket.Op = CacheOp.Put;
             m_requestPacket.TtlSeconds = cacheSeconds;
@@ -57,7 +54,7 @@ namespace packetcache
 
         public async Task<bool> DelAsync(string key)
         {
-            StrToStream(key, m_requestPacket.Key);
+            Utils.StrToStream(key, m_requestPacket.Key);
 
             m_requestPacket.Op = CacheOp.Delete;
             
@@ -68,11 +65,12 @@ namespace packetcache
         private async Task ProcessPacketAsync()
         {
             // Build out request packet
-            Packet.Pack(m_requestPacket, m_requestBuffer);
+            int request_len;
+            Packet.Pack(m_requestPacket, m_requestBuffer, out request_len);
 
             // Send the request
             int request_buffer_len = (int)m_requestBuffer.Length;
-            if (await m_client.SendAsync(m_requestBuffer.GetBuffer(), request_buffer_len) != request_buffer_len)
+            if (await m_client.SendAsync(m_requestBuffer, request_len) != request_len)
                 throw new PacketException("Not all data sent");
 
             // Recv the response
@@ -82,27 +80,12 @@ namespace packetcache
             Packet.Parse(received, m_responsePacket);
         }
 
-        private static void StrToStream(string str, MemoryStream stream)
-        {
-            int byte_count = Encoding.UTF8.GetByteCount(str);
-
-            stream.Seek(0, SeekOrigin.Begin);
-            stream.SetLength(byte_count);
-
-            Encoding.UTF8.GetBytes(str, 0, str.Length, stream.GetBuffer(), byte_count);
-        }
-
-        private static string StreamToStr(MemoryStream stream)
-        {
-            return Encoding.UTF8.GetString(stream.GetBuffer(), 0, (int)stream.Length);
-        }
-
         private UdpClient m_client;
 
         private Packet m_requestPacket = new Packet();
         private Packet m_responsePacket = new Packet();
 
-        private MemoryStream m_requestBuffer = new MemoryStream(Packet.MaxPacketSize);
-        private MemoryStream m_responseBuffer = new MemoryStream(Packet.MaxPacketSize);
+        private byte[] m_requestBuffer = new byte[Packet.MaxPacketSize];
+        private byte[] m_responseBuffer = new byte[Packet.MaxPacketSize];
     }
 }

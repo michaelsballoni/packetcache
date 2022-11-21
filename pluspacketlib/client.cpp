@@ -85,7 +85,8 @@ namespace packetcache
 	bool packet_client::process_packet()
 	{
 		// build out request packet
-		const char* pack_result = packet::pack(m_request, m_request_buffer);
+		size_t request_len = 0;
+		const char* pack_result = packet::pack(m_request, m_request_buffer, request_len);
 		if (pack_result != nullptr)
 		{
 			printf("packet::pack: %s\n", pack_result);
@@ -93,7 +94,7 @@ namespace packetcache
 		}
 
 		// send the request
-		if (::send(m_socket, (const char*)m_request_buffer.data(), (int)m_request_buffer.size(), 0) < 0)
+		if (::send(m_socket, (const char*)m_request_buffer, (int)request_len, 0) < 0)
 		{
 			int last_error = ::WSAGetLastError();
 			printf("send: %d\n", last_error);
@@ -101,8 +102,7 @@ namespace packetcache
 		}
 
 		// read the response
-		m_response_buffer.resize(max_packet_size);
-		int read_amount = ::recv(m_socket, (char*)m_response_buffer.data(), (int)m_response_buffer.size(), 0);
+		int read_amount = ::recv(m_socket, (char*)m_response_buffer, (int)max_packet_size, 0);
 		if (read_amount <= 0)
 		{
 			int last_error = ::WSAGetLastError();
@@ -110,11 +110,8 @@ namespace packetcache
 			return false;
 		}
 
-		// trim the output buffer
-		m_response_buffer.resize(read_amount);
-
 		// parse the input buffer into a usable packet
-		const char* parse_result = packet::parse(m_response_buffer, m_response);
+		const char* parse_result = packet::parse(m_response_buffer, read_amount, m_response);
 		if (parse_result != nullptr)
 		{
 			printf("packet::parse: %s\n", parse_result);

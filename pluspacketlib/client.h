@@ -24,7 +24,10 @@ namespace packetcache
 		SOCKET m_socket;
 
 		// reuse everything
-		packet m_request, m_response;
-		std::vector<uint8_t> m_request_buffer, m_response_buffer;
+		packet m_request;
+		packet m_response;
+
+		uint8_t m_request_buffer[max_packet_size];
+		uint8_t m_response_buffer[max_packet_size];
 	};
 }
