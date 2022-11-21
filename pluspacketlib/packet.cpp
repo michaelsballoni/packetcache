@@ -3,9 +3,33 @@
 #include "utils.h"
 
 #include <stdexcept>
+#include <sstream>
 
 namespace packetcache
 {
+	void packet::reset()
+	{
+		op = cache_op::Failure;
+		expiration = 0;
+
+		key.clear();
+		value.clear();
+	}
+
+	std::string packet::to_string() const
+	{
+		std::stringstream str;
+		
+		std::string key_str;
+		key_str.append((const char*)key.data(), key.size());
+
+		std::string val_str;
+		val_str.append((const char*)value.data(), value.size());
+
+		str << "op: " << (int)op << " - ttl: " << expiration << " - key: " << key_str << " - value: " << val_str;
+		return str.str();
+	}
+
 	const char* packet::pack(const packet& p, uint8_t* output, size_t& output_len)
 	{
 		// Reset the output
@@ -53,8 +77,11 @@ namespace packetcache
 		output_len += p.value.size();
 
 		// CRC what we've got so far, and add to the output
-		uint32_t crc_net = htonl(crc_bytes(output, output_len));
-		uint8_t* crc_data = reinterpret_cast<uint8_t*>(&crc_net);
+		const uint32_t crc_value = crc_bytes(output, output_len);
+		// DEBUG
+		//printf("pack crc_value = %u\n", crc_value);
+		const uint32_t crc_net = htonl(crc_value);
+		const uint8_t* crc_data = reinterpret_cast<const uint8_t*>(&crc_net);
 		output[output_len++] = crc_data[0];
 		output[output_len++] = crc_data[1];
 		output[output_len++] = crc_data[2];
@@ -79,6 +106,9 @@ namespace packetcache
 		// Validate the CRC
 		const uint32_t crc_computed = crc_bytes(input, input_len - sizeof(uint32_t));
 		const uint32_t crc_given = ntohl(*reinterpret_cast<const u_long*>(input + input_len - sizeof(uint32_t)));
+		// DEBUG
+		//printf("pack crc_computed = %u\n", crc_computed);
+		//printf("pack crc_given =    %u\n", crc_given);
 		if (crc_given != crc_computed)
 			return "checksum mismatch";
 

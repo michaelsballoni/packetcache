@@ -54,6 +54,7 @@ while (true)
                 }
 
                 var value = tokens[2];
+
                 int ttl_seconds;
                 if (!int.TryParse(tokens[3], out ttl_seconds))
                 {

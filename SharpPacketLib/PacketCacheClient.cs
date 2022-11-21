@@ -64,20 +64,29 @@ namespace packetcache
 
         private async Task ProcessPacketAsync()
         {
-            // Build out request packet
+            // Build the request
+#if DEBUG
+            Console.WriteLine("request: " + m_requestPacket);
+#endif
             int request_len;
             Packet.Pack(m_requestPacket, m_requestBuffer, out request_len);
-
+#if DEBUG
+            Console.WriteLine("ProcessPacketAsync: request_len = " + request_len);
+#endif
             // Send the request
-            int request_buffer_len = (int)m_requestBuffer.Length;
             if (await m_client.SendAsync(m_requestBuffer, request_len) != request_len)
                 throw new PacketException("Not all data sent");
 
             // Recv the response
-            byte[] received = (await m_client.ReceiveAsync()).Buffer;
-
+            byte[] response = (await m_client.ReceiveAsync()).Buffer;
+#if DEBUG
+            Console.WriteLine("ProcessPacketAsync: response_len = " + response.Length);
+#endif
             // Parse the buffer into a usable response packet
-            Packet.Parse(received, m_responsePacket);
+            Packet.Parse(response, m_responsePacket);
+#if DEBUG
+            Console.WriteLine("ProcessPacketAsync: response: " + m_responsePacket);
+#endif
         }
 
         private UdpClient m_client;
@@ -86,6 +95,5 @@ namespace packetcache
         private Packet m_responsePacket = new Packet();
 
         private byte[] m_requestBuffer = new byte[Packet.MaxPacketSize];
-        private byte[] m_responseBuffer = new byte[Packet.MaxPacketSize];
     }
 }

@@ -108,6 +108,9 @@ namespace packetcache
 					output_packet.op = cache_op::Failure;
 					success = false;
 				}
+#ifdef _DEBUG
+				printf("input: %s\n", input_packet.to_string().c_str());
+#endif
 			}
 
 			// process the packet
@@ -120,6 +123,9 @@ namespace packetcache
 					output_packet.op = cache_op::Failure;
 					success = false;
 				}
+#ifdef _DEBUG
+				printf("output: %s\n", output_packet.to_string().c_str());
+#endif
 			}
 
 			// pack the response into the output buffer

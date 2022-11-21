@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <sstream>
 #include <thread>
 #include <unordered_map>
 #include <vector>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 namespace packetcache
@@ -39,14 +40,8 @@ namespace packetcache
 		byte_array key;
 		byte_array value;
 
-		void reset()
-		{
-			op = cache_op::Failure;
-			expiration = 0;
-
-			key.clear();
-			value.clear();
-		}
+		void reset();
+		std::string to_string() const;
 
 		// These return nullptr on success, otherwise an error message
 		static const char* pack(const packet& p, uint8_t* output, size_t& output_len);

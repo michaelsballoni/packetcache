@@ -60,6 +60,11 @@ namespace packetcache
             GC.SuppressFinalize(this);
         }
 
+        public override string ToString()
+        {
+            return $"{Op} - ttl: {TtlSeconds} - key: {Utils.StreamToStr(Key)} - value: {Utils.StreamToStr(Value)}";
+        }
+
         public static void Pack(Packet p, byte[] output, out int idx)
         {
             // Make sure it will all fit
@@ -104,11 +109,14 @@ namespace packetcache
             idx += value_len;
 
             // CRC what we've got so far
-            var crc = Utils.Crc32(output, idx);
-            output[idx++] = crc[3];
-            output[idx++] = crc[2];
-            output[idx++] = crc[1];
-            output[idx++] = crc[0];
+            var crc_bytes = Utils.Crc32(output, idx);
+            // DEBUG
+            //uint crc_value = BitConverter.ToUInt32(crc_bytes);
+            //Console.WriteLine($"Pack crc_value = {crc_value}"); 
+            output[idx++] = crc_bytes[3];
+            output[idx++] = crc_bytes[2];
+            output[idx++] = crc_bytes[1];
+            output[idx++] = crc_bytes[0];
         }
 
         public static void Parse(byte[] input, Packet p)
@@ -124,16 +132,19 @@ namespace packetcache
                 throw new PacketException("Too much data");
 
             // Validate the CRC
-            byte[] crc_computed = Utils.Crc32(input, input_len - 4);
-            if 
+            byte[] crc_computed_bytes = Utils.Crc32(input, input_len - 4);
+            // DEBUG
+            //uint crc_computed_value = BitConverter.ToUInt32(crc_computed_bytes);
+            //Console.WriteLine($"Parse crc_computed_value = {crc_computed_value}"); 
+            if
             (
-                crc_computed[0] != input[input_len - 4]
+                crc_computed_bytes[0] != input[input_len - 1]
                 ||
-                crc_computed[1] != input[input_len - 3]
+                crc_computed_bytes[1] != input[input_len - 2]
                 ||
-                crc_computed[2] != input[input_len - 2]
+                crc_computed_bytes[2] != input[input_len - 3]
                 ||
-                crc_computed[3] != input[input_len - 1]
+                crc_computed_bytes[3] != input[input_len - 4]
             )
             {
                 throw new PacketException("Checksum mismath");
