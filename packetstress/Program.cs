@@ -3,7 +3,7 @@ using System.Linq;
 
 if (args.Length < 4)
 {
-    Console.WriteLine("Usage: packetapp <mem|pac> <server> <ttl second> <# threads> <test length seconds> <path to consume>");
+    Console.WriteLine("Usage: packetstress <mem|pac> <server> <ttl second> <# threads> <test length seconds> <path to consume>");
     return;
 }
 
@@ -45,7 +45,10 @@ foreach (string cur_dir in music_sub_dirs)
     if (cur_dir_files.Length > 0)
     {
         string key = cur_dir.Substring(path_to_consume.Length).Trim(Path.DirectorySeparatorChar);
-        dir_files.Add(key, string.Join('\n', cur_dir_files.Select(path => Path.GetFileName(path))));
+        string value = string.Join('\n', cur_dir_files.Select(path => Path.GetFileName(path)));
+        if (value.Length > 200)
+            value = value.Substring(0, 200);
+        dir_files.Add(key, value);
     }
 }
 var dir_file_names = dir_files.Keys.ToArray();
@@ -58,11 +61,11 @@ for (int t = 1; t <= thread_count; ++t)
     tasks[t - 1] = Task.Run(async () => await ProcessDictAsync());
 Task.WaitAll(tasks);
 
-Console.WriteLine($"hits: {stats.hits} - misses: {stats.misses} - total: {stats.total} - {stats.total / seconds_to_run_for} / sec");
+Console.WriteLine($"hits: {stats.hits} - misses: {stats.misses} - total: {stats.total} - {stats.hitPercent}% - {stats.total / seconds_to_run_for} / sec");
 
 async Task ProcessDictAsync()
 {
-    var cache = proto == "mem" ? new MemcacheClient(server, 11211) : null;
+    ICache cache = proto == "mem" ? new MemcacheClient(server, 11211) : new PacketCacheClient(server, 9914);
     if (cache == null)
     {
         Console.WriteLine("Unknown cache library: must be mem or pac");
@@ -98,4 +101,5 @@ class CacheStats
 {
     public int hits, misses;
     public int total => hits + misses;
+    public int hitPercent => (int)Math.Round(100.0 * (double)hits / total);
 }

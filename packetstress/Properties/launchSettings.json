@@ -2,7 +2,7 @@
   "profiles": {
     "packetstress": {
       "commandName": "Project",
-      "commandLineArgs": "mem\r\nlocalhost\r\n1\r\n4\r\n5\r\n\"C:\\Users\\ballo\\Music\\iTunes\\iTunes Media\\Music\""
+      "commandLineArgs": "pac\r\nlocalhost\r\n1\r\n4\r\n5\r\n\"C:\\Users\\ballo\\Music\\iTunes\\iTunes Media\\Music\""
     }
   }
 }
