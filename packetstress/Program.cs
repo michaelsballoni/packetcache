@@ -76,20 +76,27 @@ async Task ProcessDictAsync()
     while (true)
     {
         int idx = Random.Shared.Next(0, dir_file_names.Length - 1);
-        string dir_name = "" + idx;
-        string? filenames = await cache.GetAsync(dir_name);
-        if (filenames == null)
+        string dir_name = $"{idx}";
+        string? gotten_filenames = await cache.GetAsync(dir_name);
+        if (gotten_filenames == null)
         {
             lock (stats)
                 stats.misses++;
 
-            filenames = dir_files[dir_file_names[idx]];
-            await cache.SetAsync(dir_name, filenames, cache_ttl_seconds);
+            gotten_filenames = dir_files[dir_file_names[idx]];
+            await cache.SetAsync(dir_name, gotten_filenames, cache_ttl_seconds);
         }
         else
         {
             lock (stats)
                 stats.hits++;
+
+            string actual_filenames = dir_files[dir_file_names[idx]];
+            if (gotten_filenames != actual_filenames)
+            {
+                Console.WriteLine($"Cache get-put mismatch:\ngot:\n{gotten_filenames}\nshould be:\n{actual_filenames}");
+                Environment.Exit(1);
+            }
         }
 
         if ((DateTime.UtcNow - start_time).TotalSeconds >= seconds_to_run_for)
