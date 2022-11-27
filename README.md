@@ -1,2 +1,2 @@
 # packetcache
-Cache all the news that fit to...fit in a packet
+Cache all the news that fits...in a packet...
