@@ -125,11 +125,11 @@ namespace packetcache
             p.Reset();
 
             // Validate data length
-            short input_len = (short)input.Length;
-            if (input_len < MinPacketSize)
+            if (input.Length < MinPacketSize)
                 throw new PacketException("Not enough data");
-            else if (input_len > MaxPacketSize)
+            else if (input.Length > MaxPacketSize)
                 throw new PacketException("Too much data");
+            short input_len = (short)input.Length;
 
             // Validate the CRC
             byte[] crc_computed_bytes = Utils.Crc32(input, input_len - 4);

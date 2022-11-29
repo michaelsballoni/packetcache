@@ -31,9 +31,9 @@ namespace packetcache
 		// connect to server
 		sockaddr_in servaddr;
 		memset(&servaddr, 0, sizeof(servaddr));
-		servaddr.sin_addr.s_addr = inet_addr(server);
-		servaddr.sin_port = htons(port);
 		servaddr.sin_family = AF_INET;
+		servaddr.sin_port = ::htons(port);
+		servaddr.sin_addr.s_addr = ::inet_addr(server);
 		if (::connect(m_socket, (sockaddr*)&servaddr, sizeof(servaddr)) != 0)
 		{
 			int last_error = ::WSAGetLastError();

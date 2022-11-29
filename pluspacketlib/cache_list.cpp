@@ -99,8 +99,7 @@ namespace packetcache
 		entry->data = data;
 
 		// adjust the new size carefully
-		size_t new_size = data.size();
-		int64_t size_change = int64_t(new_size) - old_size;
+		int64_t size_change = int64_t(data.size()) - old_size;
 		if (-size_change > int64_t(m_size))
 			m_size = 0;
 		else
@@ -124,11 +123,10 @@ namespace packetcache
 			old_entry->next->prev = old_entry->prev;
 
 		// adjust our size
-		int64_t size_change = old_entry->size();
-		if (size_change > int64_t(m_size))
+		if (old_entry->size() > m_size)
 			m_size = 0;
 		else
-			m_size -= size_change;
+			m_size -= old_entry->size();
 
 		// clean it up
 		delete old_entry;
